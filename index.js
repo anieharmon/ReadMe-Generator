@@ -71,6 +71,43 @@ const questions = [
                 return false; 
             }
         }
+    },
+    {
+        type: 'input',
+        name: 'install',
+        message: 'What are the steps required to install your project?',
+        validate: nameInput => {
+            if (nameInput) {
+                return true;
+            } else {
+                console.log('Please enter steps required to install your project!');
+                return false; 
+            }
+        }
+    },
+    {
+        type: 'input',
+        name: 'usage',
+        message: 'How do you use this app?',
+        validate: nameInput => {
+            if (nameInput) {
+                return true;
+            } else {
+                console.log('Please enter a usage description!');
+                return false; 
+            }
+        }
+    },
+    {
+        type: 'input',
+        name: 'test', 
+        message: 'What command should be run to run tests?',
+        default: 'npm test'
+    },
+    {
+        type: 'input',
+        name: 'contributors',
+        message: 'What does the user need to know about contributing to the repo?'
     }
 
 ];
@@ -82,18 +119,20 @@ function writeToFile(fileName, data) {
     fs.writeFile(fileName, data, err => {
         if (err) {
             console.error(err);
+            return;
+        } else {
+            console.log("Your README has been successfully created!")
         }
-        console.log("slay house")
         // file written successfully
     });
 }
-
+ 
 // TODO: Create a function to initialize app
 function init() {
     inquirer
-        .prompt(questions
+        .prompt(questions)
             /* Pass your questions in here */
-        )
+        
         .then((answers) => {
             //console.log(answers);
             //console.log("Your favorite color is " + answers.colors);
