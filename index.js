@@ -137,7 +137,7 @@ function init() {
             //console.log(answers);
             //console.log("Your favorite color is " + answers.colors);
             var content = `${answers.names}'s favorite color is ${answers.colors}`;
-            writeToFile("tutor.txt", content);
+            writeToFile("README.md", content);
             // Use user feedback for... whatever!!
         })
         .catch((error) => {
@@ -150,10 +150,16 @@ function init() {
 }
 
 // Function call to initialize app
-init(); {
-    fs.appendFile('tutor.txt', 'Hello content!', function (err) {
-        if (err) throw err;
-        console.log('Saved!');
-    }
-
-}
+questions()
+// getting user answers 
+.then(answers => {
+    return generatePage(answers);
+})
+// using data to display on page 
+.then(data => {
+    return writeFile(data);
+})
+// catching errors 
+.catch(err => {
+    console.log(err)
+})
