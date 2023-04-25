@@ -128,28 +128,22 @@ function writeToFile(fileName, data) {
 }
  
 // TODO: Create a function to initialize app
-function init() {
-    inquirer
-        .prompt(questions)
-            /* Pass your questions in here */
-        
-        .then((answers) => {
-            //console.log(answers);
-            //console.log("Your favorite color is " + answers.colors);
-            var content = `${answers.names}'s favorite color is ${answers.colors}`;
-            writeToFile("README.md", content);
-            // Use user feedback for... whatever!!
-        })
-        .catch((error) => {
-            if (error.isTtyError) {
-                // Prompt couldn't be rendered in the current environment
-            } else {
-                // Something else went wrong
-            }
-        });
-}
+// function to write README file using file system 
+const writeFile = data => {
+    fs.writeFile('README.md', data, err => {
+        // if there is an error 
+        if (err) {
+            console.log(err);
+            return;
+        // when the README has been created 
+        } else {
+            console.log("Your README has been successfully created!")
+        }
+    })
+};
 
 // Function call to initialize app
+// function call to initialize program
 questions()
 // getting user answers 
 .then(answers => {
