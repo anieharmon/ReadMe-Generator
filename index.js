@@ -1,159 +1,127 @@
-// TODO: Include packages needed for this application
-var inquirer = require('inquirer');
-var fs = require('fs');
+// External packages
+const inquirer = require('inquirer');
+const fs = require('fs');
+const util = require('util');
 
-// TODO: Create an array of questions for user input
+// Internal modules
+const api = require('./utils/api.js');
+const generateMarkdown = require('./utils/generateMarkdown.js');
+
+// Inquirer prompts for userResponses
 const questions = [
     {
         type: 'input',
-        name: 'github',
-        message: 'What is your GitHub username?',
-        validate: nameInput => {
-            if (nameInput) {
-                return true;
-            } else {
-                console.log('Please enter your GitHub username!');
-                return false; 
+        message: "What is your GitHub username? (No @ needed)",
+        name: 'username',
+        default: 'connietran-dev',
+        validate: function (answer) {
+            if (answer.length < 1) {
+                return console.log("A valid GitHub username is required.");
             }
-        } 
-    },
-    {
-        type: 'input',
-        name: 'email',
-        message: 'What is your email address?',
-        validate: nameInput => {
-            if (nameInput) {
-                return true;
-            } else {
-                console.log('Please enter your email address!');
-                return false; 
-            }
+            return true;
         }
-
     },
     {
         type: 'input',
+        message: "What is the name of your GitHub repo?",
+        name: 'repo',
+        default: 'readme-generator',
+        validate: function (answer) {
+            if (answer.length < 1) {
+                return console.log("A valid GitHub repo is required for a badge.");
+            }
+            return true;
+        }
+    },
+    {
+        type: 'input',
+        message: "What is the title of your project?",
         name: 'title',
-        message: 'What is your project name?',
-        validate: nameInput => {
-            if (nameInput) {
-                return true;
-            } else {
-                console.log('Please enter your project name!');
-                return false; 
+        default: 'Project Title',
+        validate: function (answer) {
+            if (answer.length < 1) {
+                return console.log("A valid project title is required.");
             }
+            return true;
         }
     },
     {
         type: 'input',
+        message: "Write a description of your project.",
         name: 'description',
-        message: 'Please write a short description of your project.',
-        validate: nameInput => {
-            if (nameInput) {
-                return true;
-            } else {
-                console.log('Please enter a description of your project!');
-                return false; 
+        default: 'Project Description',
+        validate: function (answer) {
+            if (answer.length < 1) {
+                return console.log("A valid project description is required.");
             }
+            return true;
         }
+    },
+    {
+        type: 'input',
+        message: "If applicable, describe the steps required to install your project for the Installation section.",
+        name: 'installation'
+    },
+    {
+        type: 'input',
+        message: "Provide instructions and examples of your project in use for the Usage section.",
+        name: 'usage'
+    },
+    {
+        type: 'input',
+        message: "If applicable, provide guidelines on how other developers can contribute to your project.",
+        name: 'contributing'
+    },
+    {
+        type: 'input',
+        message: "If applicable, provide any tests written for your application and provide examples on how to run them.",
+        name: 'tests'
     },
     {
         type: 'list',
-        name: 'license',
-        message: 'What kind of license should your project have?',
-        choices: ['MIT', 'GNU'],
-        default: ["MIT"],
-        validate: nameInput => {
-            if (nameInput) {
-                return true;
-            } else {
-                console.log('Please choose a license!');
-                return false; 
-            }
-        }
-    },
-    {
-        type: 'input',
-        name: 'install',
-        message: 'What are the steps required to install your project?',
-        validate: nameInput => {
-            if (nameInput) {
-                return true;
-            } else {
-                console.log('Please enter steps required to install your project!');
-                return false; 
-            }
-        }
-    },
-    {
-        type: 'input',
-        name: 'usage',
-        message: 'How do you use this app?',
-        validate: nameInput => {
-            if (nameInput) {
-                return true;
-            } else {
-                console.log('Please enter a usage description!');
-                return false; 
-            }
-        }
-    },
-    {
-        type: 'input',
-        name: 'test', 
-        message: 'What command should be run to run tests?',
-        default: 'npm test'
-    },
-    {
-        type: 'input',
-        name: 'contributors',
-        message: 'What does the user need to know about contributing to the repo?'
+        message: "Choose a license for your project.",
+        choices: ['GNU AGPLv3', 'GNU GPLv3', 'GNU LGPLv3', 'Mozilla Public License 2.0', 'Apache License 2.0', 'MIT License', 'Boost Software License 1.0', 'The Unlicense'],
+        name: 'license'
     }
-
 ];
 
-// TODO: Create a function to write README file
 function writeToFile(fileName, data) {
-
-
     fs.writeFile(fileName, data, err => {
         if (err) {
-            console.error(err);
-            return;
-        } else {
-            console.log("Your README has been successfully created!")
+          return console.log(err);
         }
-        // file written successfully
+      
+        console.log("Success! Your README.md file has been generated")
     });
 }
- 
-// TODO: Create a function to initialize app
-// function to write README file using file system 
-const writeFile = data => {
-    fs.writeFile('README.md', data, err => {
-        // if there is an error 
-        if (err) {
-            console.log(err);
-            return;
-        // when the README has been created 
-        } else {
-            console.log("Your README has been successfully created!")
-        }
-    })
+
+const writeFileAsync = util.promisify(writeToFile);
+
+
+// Main function
+async function init() {
+    try {
+
+        // Prompt Inquirer questions
+        const userResponses = await inquirer.prompt(questions);
+        console.log("Your responses: ", userResponses);
+        console.log("Thank you for your responses! Fetching your GitHub data next...");
+    
+        // Call GitHub api for user info
+        const userInfo = await api.getUser(userResponses);
+        console.log("Your GitHub user info: ", userInfo);
+    
+        // Pass Inquirer userResponses and GitHub userInfo to generateMarkdown
+        console.log("Generating your README next...")
+        const markdown = generateMarkdown(userResponses, userInfo);
+        console.log(markdown);
+    
+        // Write markdown to file
+        await writeFileAsync('ExampleREADME.md', markdown);
+
+    } catch (error) {
+        console.log(error);
+    }
 };
 
-// Function call to initialize app
-// function call to initialize program
-questions()
-// getting user answers 
-.then(answers => {
-    return generatePage(answers);
-})
-// using data to display on page 
-.then(data => {
-    return writeFile(data);
-})
-// catching errors 
-.catch(err => {
-    console.log(err)
-})
+init();
